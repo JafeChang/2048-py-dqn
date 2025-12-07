@@ -10,5 +10,6 @@
   "scripts": {
     "start": "BROWSER=none PORT=3000 react-scripts start",
     "build": "react-scripts build"
-  }
+  },
+  "proxy": "http://localhost:8000"
 }

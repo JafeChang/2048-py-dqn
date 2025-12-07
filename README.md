@@ -42,6 +42,7 @@
    npm start
    前端默认地址: http://localhost:3000
    开发服务不再自动打开系统浏览器，如需在本机浏览器或自带 webview 中查看，请手动访问上述地址。
+   开发环境中对 /api 的请求会通过代理转发到 http://localhost:8000，你也可以设置 REACT_APP_API_URL 指向自定义后端地址。
 
 4. 训练（可选）
    在 backend 虚拟环境中：
