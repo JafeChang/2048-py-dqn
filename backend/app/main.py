@@ -1,10 +1,21 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import uuid
 from typing import Dict
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 from .game import Game2048
 
 app = FastAPI(title="2048 API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # in-memory store: game_id -> Game2048
 games: Dict[str, Game2048] = {}
