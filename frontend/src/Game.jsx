@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 
-const API = "http://localhost:8000/api";
+const apiBase =
+  process.env.REACT_APP_API_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "");
+const API = `${apiBase.replace(/\/$/, "")}/api`;
 
 export default function Game() {
   const [gameId, setGameId] = useState(null);
   const [board, setBoard] = useState([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     newGame();
@@ -21,25 +25,39 @@ export default function Game() {
   }, []);
 
   async function newGame() {
-    const r = await fetch(`${API}/new`, { method: "POST" });
-    const j = await r.json();
-    setGameId(j.game_id);
-    setBoard(j.board);
-    setScore(j.score);
-    setGameOver(false);
+    try {
+      const r = await fetch(`${API}/new`, { method: "POST" });
+      if (!r.ok) throw new Error(`Request failed: ${r.status}`);
+      const j = await r.json();
+      setGameId(j.game_id);
+      setBoard(j.board);
+      setScore(j.score);
+      setGameOver(false);
+      setError("");
+    } catch (e) {
+      console.error("Failed to start new game", e);
+      setError("无法连接服务器，请确认后端已启动并允许访问。");
+    }
   }
 
   async function move(action) {
     if (!gameId) return;
-    const r = await fetch(`${API}/move/${gameId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action })
-    });
-    const j = await r.json();
-    setBoard(j.board);
-    setScore(j.score);
-    setGameOver(j.game_over);
+    try {
+      const r = await fetch(`${API}/move/${gameId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action })
+      });
+      if (!r.ok) throw new Error(`Request failed: ${r.status}`);
+      const j = await r.json();
+      setBoard(j.board);
+      setScore(j.score);
+      setGameOver(j.game_over);
+      setError("");
+    } catch (e) {
+      console.error("Failed to make move", e);
+      setError("请求失败，请检查网络或后端服务。");
+    }
   }
 
   return (
@@ -64,6 +82,7 @@ export default function Game() {
         ))}
       </div>
       {gameOver && <div style={{ marginTop: 10 }}>Game Over</div>}
+      {error && <div style={{ marginTop: 10, color: "red" }}>{error}</div>}
       <div style={{ marginTop: 10 }}>
         <button onClick={() => move("up")}>Up</button>
         <button onClick={() => move("down")}>Down</button>
